@@ -10,7 +10,10 @@ parser = argparse.ArgumentParser()
 parser.add_argument(
     "--csr_report_path",
     help="Please input the folder containing all csr reports in pdf format",
-    default='..\csr_reports\CSR報告書(2020年發佈)')
+    default='.\\test'
+    #default='D:\\Non_system\\NCCU\\case\\csr_reports\\CSR報告書(2020年發佈)'
+    )
+
 parser.add_argument(
     "--get_gri_pointers",
     action='store_true',
@@ -38,7 +41,6 @@ b_sheets_process.init_gri_pointers_csv_file(
 
 if args.get_gri_pointers:
     b_sheets_process.catch_gri_pointers(
-        gri_csv_name=b_sheets_process.get_gri_pointers_csv_name(),
         csr_report_path=b_sheets_process.get_csr_report_path(),
         search_term='GRI')
     b_sheets_process.output_B_pointers()

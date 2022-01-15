@@ -1,10 +1,8 @@
-from Construct_B_sheets import construct_gri_df
-import Exception_handling
-import GRIPointers_B
-from GRIPointers_B import GRIPointers_B
-import Judging_csr_reports_level
+from packages.Construct_B_sheets import construct_gri_df
+from crawler import GRIPointers_B
 import argparse
 import os
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument(

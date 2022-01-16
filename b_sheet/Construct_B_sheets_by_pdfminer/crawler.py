@@ -4,6 +4,7 @@ import pandas as pd
 import re
 import numpy as np
 from packages.Exception_handling import get_exception
+import datetime
 
 
 class GRIPointers_B:
@@ -14,6 +15,7 @@ class GRIPointers_B:
         self.csv_file = ''
         self.current_gri_pointer_number = 0
         self.reveal_number = 0
+        self.pattern = ''
 
     def catch_gri_pointers(self, csr_report_path: str, search_term: str):
         """
@@ -138,44 +140,55 @@ class GRIPointers_B:
             current_gri_pointer_number=self.current_gri_pointer_number)
         ##########################################
         # Crawl into each page of current csr, if catch gri keywords then insert it into csv files
-
         for current_page in range(len(pdf_document)):
-            self.current_gri_pointer_number = self.__reset_gri_pointer(
-            )  # Every page should traversal all the gri pointer
+            self.current_gri_pointer_number = self.__reset_gri_pointer()
+            # Every page should traversal all the gri pointer
             page = pdf_document.loadPage(current_page)
-            if page.searchFor(search_term) or page.searchFor(
-                    "指標") or page.searchFor("揭露項目"):
-                self.__fill_into_single_csv(current_company_number, page)
+            if page.searchFor('附錄'):
+                if page.searchFor(search_term) or page.searchFor(
+                        "指標") or page.searchFor("揭露項目"):
+                    self.__fill_into_single_csv(current_company_number, page)
         self.__fill_in_each_reports_reveal_and_unreveal_numbers(
             current_company_number)
 
     def __fill_into_single_csv(self, current_company_number, page):
         #Using normal expression to filter words caught.
-        pattern = r"[0-9-－–\s]"
         gri_pointers_disclosed_in_this_page = self.__gri_text_filter(
-            re.findall(pattern, page.getText("text")))
-
+            re.findall(self.pattern, page.getText("text")))
+        print(gri_pointers_disclosed_in_this_page)
         ##########################################
-        #TODO: process the conditions below.
-        #TODO: push into heroku
         #目前是用column進行判斷，有沒有其他判斷方式比較好做的？
         for column in self.csv_file.columns:
-            if self.current_gri_pointer_number == len(self.csv_file.columns):
+
+            #處理何時換到下一間公司或是換到下一個指標
+            ####################################
+            # GRI指標共只有136個，從第3欄開始算，可以透過這個方式遇到第139欄位時換到下一間公司
+            if self.current_gri_pointer_number == 139:
                 break
+
+            #當遇到某個GRI指標已經是1時，則直接跳過到下一個GRI指標繼續對是否揭露進行判斷
             if self.csv_file.iat[current_company_number,
-                                 self.current_gri_pointer_number] == 1:
+                                 self.current_gri_pointer_number] == int(1):
+                print(column)
                 self.current_gri_pointer_number += 1
                 continue
+
+            ####################################
+            #處理是否揭露的判斷式
             for disclosed_num in gri_pointers_disclosed_in_this_page:
                 if column == disclosed_num:
+
                     self.csv_file.iat[current_company_number,
-                                      self.current_gri_pointer_number - 1] = 1
+                                      self.current_gri_pointer_number -
+                                      1] = int(1)
                     self.reveal_number += 1
                     break
                 elif disclosed_num == list(
                         gri_pointers_disclosed_in_this_page)[-1]:
                     self.csv_file.iat[current_company_number,
                                       self.current_gri_pointer_number] = 0
+                # else:
+                    # print(f'{disclosed_num} : {column}')
             self.current_gri_pointer_number += 1
 
     def __detect_disclosed_pointers_algorithm(self):
@@ -218,11 +231,7 @@ class GRIPointers_B:
         self.csv_file.iat[current_company_number,
                           -1] = 136 - self.reveal_number
 
-    def __fill_corporate_name(
-        self,
-        file,
-        current_company_number,
-    ):
+    def __fill_corporate_name(self, file, current_company_number):
         self.csv_file.iat[current_company_number, 0] = file
 
     def __shift_to_next_gri_pointer(self, current_gri_pointer_number):
@@ -266,7 +275,8 @@ class GRIPointers_B:
         return splited_text[index]
 
     def output_B_pointers(self):
-        self.csv_file.to_csv(f'{self.get_gri_pointers_csv_name()}.csv',
+        today = datetime.date.today()
+        self.csv_file.to_csv(f'{today}_gri_pointers_b.csv',
                              encoding='utf-8-sig')
 
     def get_gri_pointers_csv_name(self):
@@ -277,3 +287,6 @@ class GRIPointers_B:
 
     def get_csr_report_path(self):
         return self.csr_report_path
+
+    def set_pattern(self, pattern):
+        self.pattern = pattern

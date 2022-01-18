@@ -6,9 +6,12 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.time.LocalDateTime;  
+import java.time.format.DateTimeFormatter;  
+
 
 public class BListProcessor {
-
+	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
 		try {
@@ -36,7 +39,7 @@ public class BListProcessor {
 					StandardCharsets.UTF_8);
 			BufferedReader outputFileReader = new BufferedReader(outputFile);
 			InputStreamReader BListFile = new InputStreamReader(
-					new FileInputStream("gri_pointers_b.csv"), StandardCharsets.UTF_8);
+					new FileInputStream("C:\\Users\\user\\Desktop\\CSR_project\\CSR_reports_in_Taiwan_to_DB\\b_sheet\\Construct_B_sheets_by_pdfminer\\csv_file\\2022-01-18_gri_pointers_b.csv"), StandardCharsets.UTF_8);
 			BufferedReader BListFileReader = new BufferedReader(BListFile);
 
 			String outputList[][] = new String[602][]; // 602 lines to be processed
@@ -86,7 +89,7 @@ public class BListProcessor {
 			// Arrays.stream(BList).forEach(array -> Arrays.stream(array).forEach(item ->
 			// System.out.println(item + " ")));
 
-			BufferedWriter writer = new BufferedWriter(new FileWriter("compare_result.csv"));
+			BufferedWriter writer = new BufferedWriter(new FileWriter(java.time.LocalDate.now()+"_compare_result.csv"));
 
 			// Title
 			for (int i = 0; i < outputList[0].length; i++) {

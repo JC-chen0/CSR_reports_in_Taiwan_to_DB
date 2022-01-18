@@ -39,7 +39,7 @@ public class BListProcessor {
 					StandardCharsets.UTF_8);
 			BufferedReader outputFileReader = new BufferedReader(outputFile);
 			InputStreamReader BListFile = new InputStreamReader(
-					new FileInputStream("C:\\Users\\user\\Desktop\\CSR_project\\CSR_reports_in_Taiwan_to_DB\\b_sheet\\Construct_B_sheets_by_pdfminer\\csv_file\\2022-01-18_gri_pointers_b.csv"), StandardCharsets.UTF_8);
+					new FileInputStream("C:\\Users\\user\\Desktop\\CSR_project\\CSR_reports_in_Taiwan_to_DB\\b_sheet\\Construct_B_sheets_by_pdfminer\\csv_file\\2022-01-19_gri_pointers_b.csv"), StandardCharsets.UTF_8);
 			BufferedReader BListFileReader = new BufferedReader(BListFile);
 
 			String outputList[][] = new String[602][]; // 602 lines to be processed

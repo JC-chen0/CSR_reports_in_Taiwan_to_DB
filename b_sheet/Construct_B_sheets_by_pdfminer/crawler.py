@@ -88,7 +88,7 @@ class GRIPointers_B:
                 self.__fill_into_single_csv(current_company_number, page)
 
         #抓到已揭露指標的數目
-        for temp in range(1, 136):
+        for temp in range(1, 142):
             if self.csv_file.iat[current_company_number, temp] == 1:
                 self.reveal_number += 1
             else:

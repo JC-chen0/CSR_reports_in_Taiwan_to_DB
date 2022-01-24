@@ -76,7 +76,7 @@ def construct_gri_df():
         pointer = "402-" + str(temp + 1)
         col_name_list.append(pointer)
 
-    for temp in range(4):
+    for temp in range(10):
         pointer = "403-" + str(temp + 1)
         col_name_list.append(pointer)
 
@@ -148,4 +148,6 @@ def construct_gri_df():
     col_name_list.append('unreveal_num')
 
     df = pd.DataFrame(index=range(1, 514), columns=col_name_list)
-    df.to_csv('gri_pointers_b_frame.csv', encoding='utf_8_sig')
+    df.to_csv('testing_reports\\gri_pointers_b_frame.csv', encoding='utf_8_sig')
+
+construct_gri_df()

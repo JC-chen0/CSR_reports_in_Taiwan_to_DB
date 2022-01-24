@@ -12,16 +12,15 @@ import numpy as np
 import argparse
 from Exception_handling import get_exception
 
+
 class judging_csr_reports_level:
-    
     def __init__(self, csr_report_path):
         self.csr_report_path = csr_report_path
         self._files_list = os.listdir(self.csr_report_path)
         self._corporate_name = []
         self._picture_amount = []
         self._level = []
-        
-    
+
     def judge_csr_reports_difficulty(self):
         """
         judge_csr_reports_difficulty [summary]

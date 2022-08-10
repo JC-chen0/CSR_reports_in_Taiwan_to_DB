@@ -6,8 +6,15 @@ import numpy as np
 from packages.Exception_handling import get_exception
 import datetime
 from packages.pointers_transfer import transfer_numbers
-
-
+import tkinter as tk
+from tkinter import filedialog
+from tkinter import messagebox
+from tkinter.constants import *
+from tkinter import *
+from tkinter import ttk
+import threading
+import time
+import multiprocessing
 
 class GRIPointers_B:
     def __init__(self, csr_report_path: str, gri_pointers_csv_name: str):
@@ -79,16 +86,16 @@ class GRIPointers_B:
         for current_page in range(len(pdf_document)):
             self.__reset_gri_pointer()
             # Every page should traversal all the gri pointer
-            page = pdf_document.loadPage(current_page)
+            page = pdf_document.load_page(current_page)
 
             # 抓到每篇CSR報告附錄的GRI指標對照表
-            if page.searchFor('GRI') or page.searchFor(
-                        "指標") or page.searchFor("揭露") or page.searchFor("附錄"):
+            if page.search_for('GRI') or page.search_for(
+                        "指標") or page.search_for("揭露") or page.search_for("附錄"):
                 print(page)
                 self.__fill_into_single_csv(current_company_number, page)
 
         #抓到已揭露指標的數目
-        for temp in range(1, 142):
+        for temp in range(1, 136):
             if self.csv_file.iat[current_company_number, temp] == 1:
                 self.reveal_number += 1
             else:
@@ -103,7 +110,7 @@ class GRIPointers_B:
     def __fill_into_single_csv(self, current_company_number, page):
         #Using normal expression to filter words caught.
         gri_pointers_disclosed_in_this_page = self.__gri_text_filter(
-            re.findall(self.pattern, page.getText("text")))
+            re.findall(self.pattern, page.get_text("text")))
         gri_pointers_disclosed_in_this_page = transfer_numbers(gri_pointers_disclosed_in_this_page)
         print(gri_pointers_disclosed_in_this_page)
         ##########################################
@@ -188,7 +195,7 @@ class GRIPointers_B:
     def check_hyphen_exception(self, splited_text: list, index: int) -> str:
         splited_text[index] = " ".join(splited_text[index].split())
         splited_text[index] = splited_text[index].strip()
-        #replace一a些在欄位中比較特別的符號
+        #replace一些在欄位中比較特別的符號
         splited_text[index] = splited_text[index].replace("–", "-")
         splited_text[index] = splited_text[index].replace(" - ", "-")
         splited_text[index] = splited_text[index].replace("－", "-")
@@ -289,14 +296,87 @@ class GRIPointers_B:
     def set_pattern(self, pattern):
         self.pattern = pattern
 
-b_sheets_process = GRIPointers_B(
-    csr_report_path='.\\testing_reports',
-    # csr_report_path='C:\\Users\\user\\Desktop\\CSR_project\\csr_reports\\csr_reports_2020',
+
+
+window = tk.Tk()
+window.title('B表工具')
+window.geometry("300x100")
+
+file_list = []
+csr_report_path = StringVar()
+progressbar=ttk.Progressbar(window,length=250,mode="determinate")
+
+progressbar.pack()
+progressbar.place(x=25,y=70)
+
+def progressbar_start():
+    if progressbar["value"] < progressbar["maximum"]:    # 小於最大值持續增量
+        progressbar["value"] += 1               # 進度增量 1
+
+def open_file():
+    directory = filedialog.askdirectory(title="選擇CSR報告存放位置")
+                                                 
+    csr_report_path.set(directory)
+    entry_f.delete(1.0,"end")
+    entry_f.insert(1.0,csr_report_path.get())
+    
+    output_b["state"] = "normal"
+
+def execute():
+    
+    progressbar.start()
+    output_b["state"] = "disabled"
+    button_import["state"] = "disabled"
+    def processing_csr():
+        b_sheets_process = GRIPointers_B(
+    csr_report_path=csr_report_path.get(),
                                  gri_pointers_csv_name=".\\csv_file\\gri_pointers_b_frame")
-b_sheets_process.set_pattern(pattern = r"[0-9-－–\s]")
-b_sheets_process.init_gri_pointers_csv_file(
-    b_sheets_process.gri_pointers_csv_name)
-b_sheets_process.catch_gri_pointers(
-    csr_report_path=b_sheets_process.get_csr_report_path(), search_term='GRI')
-print(b_sheets_process.csv_file)
-b_sheets_process.output_B_pointers()
+        b_sheets_process.set_pattern(pattern = r"[0-9-－–\s]")
+        b_sheets_process.init_gri_pointers_csv_file(
+            b_sheets_process.gri_pointers_csv_name)
+        b_sheets_process.catch_gri_pointers(
+            csr_report_path=b_sheets_process.get_csr_report_path(), search_term='GRI')
+        b_sheets_process.output_B_pointers()
+
+    processing_csr()
+    progressbar["value"] = 99
+    
+    progressbar.stop()
+    messagebox.showinfo('', '輸出已完成 \n 請於與程式同路徑底下之csv_file資料夾找尋當日csv檔案')
+
+    output_b["state"] = "normal"
+    button_import["state"] = "normal"
+
+def job():
+    processing_thread.start()
+
+def on_closing():
+    if processing_thread.is_alive():
+        processing_thread.join()
+        window.destroy()
+        
+    window.destroy()
+
+window.protocol("WM_DELETE_WINDOW", on_closing)
+
+all_process = []
+
+# processing_thread = multiprocessing.Process(target = execute)
+processing_thread = threading.Thread(target = execute)
+processing_thread.daemon = True
+all_process.append(processing_thread)
+#設定button按鈕接受功能
+button_import = tk.Button(window, text="選擇CSR報告位置", command=open_file)
+button_import.place(x=25,y=5)
+
+
+
+
+#設定entry
+entry_f=tk.Text(window, height=1.3, width=35)
+entry_f.place(x=25, y=40)
+
+output_b=tk.Button(window, text="輸出B表CSV", command=job)
+output_b.place(x=200,y=5)
+output_b["state"] = "disabled"
+window.mainloop()

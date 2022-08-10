@@ -77,6 +77,9 @@ threading
 multiprocessing
 
 此處沒有使用requirement.txt的原因在於視不同安裝方式，例如pip或是conda會有不同的裝法，建議可以直接使用pip安裝
+
+打包程式方式詳見pyinstaller document。
+
 # 更新日誌
 
 22/08/10
